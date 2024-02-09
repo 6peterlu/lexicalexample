@@ -1,0 +1,55 @@
+version: '3'
+services:
+  web:
+    container_name: web
+    build:
+      context: web
+      dockerfile: ./Dockerfile
+    command: yarn start-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web/components:/app/components
+      - ./web/cache:/app/cache
+      - ./web/public:/app/public
+      - ./web/hooks:/app/hooks
+      - ./web/nodes:/app/nodes
+      - ./web/pages:/app/pages
+      - ./web/utils:/app/utils
+      - ./web/prisma:/app/prisma
+      - ./web/models:/app/models
+      - ./web/types:/app/types
+      - ./web/package.json:/app/package.json
+      - ./web/yarn.lock:/app/yarn.lock
+      - ./web/codegen.yml:/app/codegen.yml
+      - ./web/generated:/app/generated
+      - ./web/schema.graphql:/app/schema.graphql
+    env_file:
+      - ./web/.env.local
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: db
+    image: postgres:alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=editor_db
+      - POSTGRES_USER=local_user
+      - POSTGRES_PASSWORD=local_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U local_user -d editor_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  y-ws:
+    container_name: y-ws
+    build:
+      context: y-ws
+      dockerfile: ./Dockerfile
+    command: yarn start
+    ports:
+      - 1234:1234
+    volumes:
+      - ./y-ws/src:/app/src

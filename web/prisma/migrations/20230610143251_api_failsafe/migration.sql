@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "openAIAPICalls" INTEGER NOT NULL DEFAULT 0;

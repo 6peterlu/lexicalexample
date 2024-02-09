@@ -1,0 +1,337 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  binaryTargets   = ["linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+  previewFeatures = ["orderByNulls"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NOTE: If the last admin deletes the document, the document is deleted for all.
+// The admin will be prompted to promote someone else to admin when deleting.
+enum Role {
+  OWNER // can delete the doc for everyone
+  ADMIN // can invite others
+  EDITOR // can modify document content
+  LEAD_REVIEWER // can leave and see all comments
+  REVIEWER // can leave comments
+}
+
+enum EnhancedDocumentRole {
+  OWNER
+}
+
+enum NoteRole {
+  OWNER // can delete the doc for everyone
+  ADMIN // can share
+  EDITOR // can modify document content
+}
+
+model User {
+  userID                          String                            @id @default(uuid())
+  username                        String?                           @unique // only null for new users   
+  comments                        Comment[]
+  appDrawerNoteIDs                String[]
+  userDocumentPermissions         UserDocumentPermission[]
+  firstName                       String? // only null for new users
+  lastName                        String?
+  userNotePermission              UserNotePermission[]
+  email                           String                            @unique
+  statUnit                        DailyStatUnit[]
+  scratchpadEntry                 ScratchpadEntry[]
+  userDocumentAttributes          UserDocumentAttributes[]
+  dailyChallengeResponse          DailyChallengeResponse[]
+  dailyChallengeResponseLikes     DailyChallengeResponseLikes[]
+  longestStreak                   Int                               @default(0)
+  dailyChallengePromptSuggestion  DailyChallengePromptSuggestion[]
+  followedBy                      Follows[]                         @relation("following")
+  following                       Follows[]                         @relation("follower")
+  bio                             String?
+  city                            String?
+  country                         String?
+  website                         String?
+  twitter                         String?
+  instagram                       String?
+  PublishedDocument               PublishedDocument[]
+  publishedDocumentLikes          PublishedDocument[]               @relation("likes")
+  writingSessions                 WritingSession[]
+  writingSessionLikes             WritingSession[]                  @relation("writingSessionLikes")
+  createdAt                       DateTime                          @default(now())
+  userEnhancedDocumentPermissions UserEnhancedDocumentPermissions[]
+  openAIAPICalls                  Int                               @default(0)
+  threadAttributes                ThreadAttributes[]
+
+  @@index([username])
+  @@index([email])
+}
+
+model Follows {
+  follower    User   @relation("follower", fields: [followerID], references: [userID], onDelete: Cascade)
+  followerID  String
+  following   User   @relation("following", fields: [followingID], references: [userID], onDelete: Cascade)
+  followingID String
+
+  @@id([followerID, followingID])
+}
+
+model Note {
+  noteID              String               @id @default(uuid())
+  title               String?
+  content             Json?
+  icon                String?
+  updatedAt           DateTime             @updatedAt
+  userNotePermissions UserNotePermission[]
+  document            Document             @relation(fields: [documentID], references: [documentID])
+  documentID          String
+  personal            Boolean              @default(false)
+}
+
+// Document versions contain a specific iteration of document content (not title)
+// Includes comment and permission data.
+model DocumentVersion {
+  documentVersionID       String                   @id @default(uuid())
+  content                 Json?
+  comments                Comment[]
+  userDocumentPermissions UserDocumentPermission[]
+  updatedAt               DateTime                 @updatedAt
+  createdAt               DateTime                 @default(now())
+  documentID              String
+  document                Document                 @relation(fields: [documentID], references: [documentID], onDelete: Cascade)
+  versionName             String
+  statUnit                DailyStatUnit[]
+  userDocumentAttributes  UserDocumentAttributes[]
+  wordCount               Int                      @default(0)
+
+  @@index([documentID, versionName])
+}
+
+// Documents contain all data needed to load a document.
+model Document {
+  documentID              String                   @id @default(uuid())
+  documentVersions        DocumentVersion[]
+  userDocumentPermissions UserDocumentPermission[]
+  notes                   Note[]
+  title                   String
+  updatedAt               DateTime                 @updatedAt
+  statUnit                DailyStatUnit[]
+  userDocumentAttributes  UserDocumentAttributes[]
+  PublishedDocument       PublishedDocument[]
+  WritingSession          WritingSession[]
+}
+
+model UserEnhancedDocumentPermissions {
+  userID             String
+  user               User                 @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  enhancedDocumentID String
+  enhancedDocument   EnhancedDocument     @relation(fields: [enhancedDocumentID], references: [enhancedDocumentID], onDelete: Cascade)
+  role               EnhancedDocumentRole
+
+  @@id([userID, enhancedDocumentID])
+}
+
+model EnhancedDocument {
+  enhancedDocumentID              String                            @id @default(uuid())
+  notesContent                    Json
+  embeddingsByNodeID              Json?
+  title                           String
+  updatedAt                       DateTime                          @updatedAt
+  draftContent                    Json?
+  userEnhancedDocumentPermissions UserEnhancedDocumentPermissions[]
+  draftCollapsed                  Boolean                           @default(true)
+  ideas                           String[]                          @default([])
+  threadAttributes                ThreadAttributes[]
+}
+
+model ThreadAttributes {
+  threadID           String           @id @default(uuid())
+  user               User             @relation(fields: [userID], references: [userID])
+  userID             String
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  archivedAt         DateTime?
+  document           EnhancedDocument @relation(fields: [enhancedDocumentID], references: [enhancedDocumentID], onDelete: Cascade)
+  enhancedDocumentID String
+  chatMessage        ChatMessage[]
+  sectionData        Json? // lexical section data
+}
+
+enum ChatMessageAuthor {
+  USER
+  SYSTEM
+}
+
+model ChatMessage {
+  chatMessageID String            @id @default(uuid())
+  content       String
+  author        ChatMessageAuthor
+  createdAt     DateTime          @default(now())
+  thread        ThreadAttributes  @relation(fields: [threadID], references: [threadID], onDelete: Cascade)
+  threadID      String
+
+  @@index([threadID])
+}
+
+model PublishedDocument {
+  publishedDocumentID String   @id @default(uuid())
+  document            Document @relation(fields: [documentID], references: [documentID])
+  documentID          String
+  user                User     @relation(fields: [userID], references: [userID])
+  content             Json?
+  url                 String
+  userID              String
+  publishedAt         DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  title               String // defaults to document title
+  subtitle            String?
+  likingUsers         User[]   @relation("likes")
+
+  @@unique([documentID, userID])
+  @@unique([userID, url])
+}
+
+model ScratchpadEntry {
+  scratchpadEntryID String   @id @default(uuid())
+  content           Json?
+  date              DateTime @db.Date
+  userID            String
+  user              User     @relation(fields: [userID], references: [userID], onDelete: Cascade)
+
+  @@index([userID, date])
+}
+
+model Comment {
+  commentID         String          @id @default(uuid())
+  // selection data for lexical to render
+  // make comment datatype more flexible
+  commentData       Json
+  authorID          String
+  // TODO: make it so if a user deletes their account we convert this to null field
+  author            User            @relation(fields: [authorID], references: [userID])
+  documentVersionID String
+  documentVersion   DocumentVersion @relation(fields: [documentVersionID], references: [documentVersionID], onDelete: Cascade)
+  updatedAt         DateTime        @updatedAt
+  private           Boolean
+  resolved          Boolean         @default(false)
+  // the text selected at the time of comment creation
+  selectedText      String
+
+  // TODO: once access patterns are determined by permissions, add index
+}
+
+// Note: this model is used for both DocumentVersions and Documents.
+model UserDocumentPermission {
+  userDocumentPermissionID String           @id @default(uuid())
+  userID                   String
+  user                     User             @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  documentVersionID        String?
+  documentVersion          DocumentVersion? @relation(fields: [documentVersionID], references: [documentVersionID], onDelete: Cascade)
+  role                     Role
+  document                 Document?        @relation(fields: [documentID], references: [documentID], onDelete: Cascade)
+  documentID               String?
+}
+
+model UserNotePermission {
+  userNotePermissionID String   @id @default(uuid())
+  userID               String
+  user                 User     @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  role                 NoteRole
+  note                 Note     @relation(fields: [noteID], references: [noteID], onDelete: Cascade)
+  noteID               String
+}
+
+model UserDocumentAttributes {
+  documentID                  String
+  document                    Document        @relation(fields: [documentID], references: [documentID], onDelete: Cascade)
+  userID                      String
+  user                        User            @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  lastOpenedDocumentVersionID String
+  lastOpenedDocumentVersion   DocumentVersion @relation(fields: [lastOpenedDocumentVersionID], references: [documentVersionID], onDelete: Cascade)
+
+  @@unique([documentID, userID])
+}
+
+// per day
+model DailyStatUnit {
+  dailyStatUnitID          String                  @id @default(uuid())
+  userID                   String
+  user                     User                    @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  documentVersionID        String?
+  documentVersion          DocumentVersion?        @relation(fields: [documentVersionID], references: [documentVersionID])
+  documentID               String?
+  document                 Document?               @relation(fields: [documentID], references: [documentID])
+  dailyChallengeResponse   DailyChallengeResponse? @relation(fields: [dailyChallengeResponseID], references: [dailyChallengeResponseID])
+  dailyChallengeResponseID String?
+  date                     DateTime                @default(now()) @db.Date
+  timeSpentSeconds         Int                     @default(0)
+  wordsAdded               Int                     @default(0)
+  wordsRemoved             Int                     @default(0)
+
+  @@unique([userID, date, documentVersionID])
+  @@unique([date, dailyChallengeResponseID])
+}
+
+model WritingSession {
+  writingSessionID String    @id @default(uuid())
+  userID           String
+  user             User      @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  segmentTime      Int[] // time per twenty words changed
+  wordsAdded       Int       @default(0)
+  wordsRemoved     Int       @default(0)
+  timeSpentSeconds Int       @default(0)
+  startDateTime    DateTime  @default(now())
+  title            String
+  // document is optional because document can be deleted
+  document         Document? @relation(fields: [documentID], references: [documentID])
+  documentID       String?
+  likes            User[]    @relation("writingSessionLikes")
+  inProgress       Boolean   @default(true)
+  updatedAt        DateTime  @updatedAt
+}
+
+model DailyChallenge {
+  prompt                 String
+  date                   DateTime                 @unique @default(now()) @db.Date
+  id                     Int                      @id @default(autoincrement())
+  dailyChallengeResponse DailyChallengeResponse[]
+}
+
+model DailyChallengeResponseLikes {
+  user                     User                   @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  userID                   String
+  dailyChallengeResponse   DailyChallengeResponse @relation(fields: [dailyChallengeResponseID], references: [dailyChallengeResponseID], onDelete: Cascade)
+  dailyChallengeResponseID String
+  likeID                   String                 @id @default(uuid())
+
+  @@unique([userID, dailyChallengeResponseID])
+}
+
+model DailyChallengeResponse {
+  user                     User?                         @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  userID                   String?
+  likes                    DailyChallengeResponseLikes[]
+  dailyChallenge           DailyChallenge                @relation(fields: [dailyChallengeID], references: [id], onDelete: Cascade)
+  dailyChallengeID         Int
+  dailyChallengeResponseID String                        @id @default(uuid())
+  content                  Json?
+  postedOn                 DateTime?
+  dailyStatUnit            DailyStatUnit[]
+  wordCount                Int                           @default(0)
+  completedOnTime          Boolean                       @default(false)
+
+  @@unique([userID, dailyChallengeID])
+}
+
+model DailyChallengePromptSuggestion {
+  promptSuggestionID String    @id @default(uuid())
+  prompt             String
+  userID             String
+  user               User      @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  usedOn             DateTime? @db.Date
+}

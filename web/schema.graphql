@@ -1,0 +1,798 @@
+enum ActionPermission {
+  CreateCommentOnDocumentVersion
+  DeleteDocumentVersionForAll
+  DeleteNoteForAll
+  EditDocumentVersionContent
+  PublishDocumentVersion
+  RemoveCollaboratorFromDocumentVersion
+  RenameDocumentVersion
+  ShareDocument
+  ShareDocumentVersion
+}
+
+type Comment {
+  commentData: String
+  commentID: String
+  resolved: Boolean
+  selectedText: String
+  user: User
+}
+
+input CompleteWritingSessionRequest {
+  writingSessionID: String!
+}
+
+input ContinueChatConversationRequest {
+  chatMessage: String!
+  enhancedDocumentID: String!
+  threadID: String!
+}
+
+type ContinueChatConversationResponse {
+  responseMessage: String!
+}
+
+input CreateCommentRequest {
+  commentData: String!
+  documentID: String!
+  selectedText: String!
+  versionName: String
+}
+
+type CreateCommentResponse {
+  createdComment: Comment!
+}
+
+type CreateDocumentResponse {
+  documentID: String!
+}
+
+input CreateDocumentVersionRequest {
+  sourceDocumentVersionID: String!
+  versionName: String!
+}
+
+input CreateNoteRequest {
+  documentID: String!
+}
+
+input CreateWritingSessionRequest {
+  documentID: String!
+}
+
+type DailyChallenge {
+  content: String!
+  date: Date!
+  id: Int!
+}
+
+type DailyChallengeResponse {
+  content: String
+  dailyChallengeID: Int!
+  dailyChallengeResponseID: String
+  likes: [String!]!
+  postedOn: DateTime
+  userID: String
+}
+
+type DailyChallengeStatus {
+  completedOnTime: Boolean!
+  date: Date!
+  status: Int!
+}
+
+scalar Date
+
+scalar DateTime
+
+input DeleteDocumentForUserRequest {
+  documentID: String!
+}
+
+input DeleteDocumentRequest {
+  documentID: String!
+}
+
+input DeleteDocumentVersionRequest {
+  documentVersionID: String!
+}
+
+input DeleteEnhancedDocumentRequest {
+  enhancedDocumentID: String!
+}
+
+input DeleteNoteRequest {
+  noteID: String!
+}
+
+input DeleteWritingSessionRequest {
+  writingSessionID: String!
+}
+
+type DocumentMetadata {
+  documentID: String!
+  documentVersions: [DocumentVersionMetadata!]!
+  lastOpenedDocumentVersionID: String
+  title: String!
+  updatedAt: DateTime!
+  userDocumentPermissions: [UserDocumentPermissionMetadata!]!
+}
+
+type DocumentVersion {
+  actionPermissions: [ActionPermission!]!
+  content: String
+  documentVersionID: String!
+  userDocumentPermissions: [UserDocumentPermissionMetadata!]!
+  versionName: String!
+}
+
+type DocumentVersionMetadata {
+  createdAt: DateTime!
+  documentVersionID: String!
+  versionName: String
+}
+
+enum EditableNoteRole {
+  ADMIN
+  EDITOR
+}
+
+enum EditableRole {
+  ADMIN
+  EDITOR
+  LEAD_REVIEWER
+  REVIEWER
+}
+
+input EmbeddingCallInput {
+  nodeID: String!
+  text: String!
+}
+
+type EnhancedDocument {
+  draftCollapsed: Boolean!
+  draftContent: String
+  embeddingsByNodeID: String!
+  enhancedDocumentID: String!
+  ideas: [String!]!
+  notesContent: String!
+  title: String!
+}
+
+type EnhancedDocumentMetadata {
+  enhancedDocumentID: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input ExtrapolateIdeaInContextRequest {
+  enhancedDocumentID: String!
+  followingText: String!
+  idea: String!
+  precedingText: String!
+}
+
+type ExtrapolateIdeaInContextResponse {
+  extrapolatedIdea: String!
+}
+
+type FeedItem {
+  date: DateTime!
+  feedItemType: FeedItemType!
+  serializedData: String!
+}
+
+enum FeedItemType {
+  WritingSession
+}
+
+input FollowUserRequest {
+  userID: String!
+}
+
+input GenerateDraftRequest {
+  document: String!
+  enhancedDocumentID: String!
+}
+
+type GenerateDraftResponse {
+  draft: String!
+}
+
+input GetAllPublishedDocumentVersionsForUserInput {
+  username: String!
+}
+
+input GetCommentsForDocumentRequest {
+  documentID: String!
+  resolved: Boolean!
+  versionName: String
+}
+
+type GetCommentsForDocumentResponse {
+  comments: [Comment!]!
+}
+
+input GetContentForScratchpadEntriesRequest {
+  dates: [Date!]!
+}
+
+input GetDailyChallengeForDateRequest {
+  date: Date!
+}
+
+type GetDailyChallengeForDateResponse {
+  prompt: DailyChallenge!
+  response: DailyChallengeResponse
+}
+
+input GetDailyChallengeStatusesForTrackingPageRequest {
+  endDate: Date!
+  startDate: Date!
+}
+
+input GetDocumentRequest {
+  documentID: String!
+}
+
+type GetDocumentResponse {
+  actionPermissions: [ActionPermission!]!
+  documentID: String!
+  documentVersionMetadataList: [DocumentVersionMetadata!]!
+  title: String!
+  userDocumentPermissions: [UserDocumentPermissionMetadata!]!
+}
+
+input GetDocumentVersionFromVersionNameRequest {
+  documentID: String!
+  versionName: String
+}
+
+input GetDocumentVersionRequest {
+  documentVersionID: String!
+}
+
+type GetDocumentsResponse {
+  documents: [DocumentMetadata!]!
+}
+
+input GetEmbeddingInput {
+  allNodeIDs: [String!]!
+  embeddingID: String!
+  embeddingInputs: [EmbeddingCallInput!]!
+  enhancedDocumentID: String!
+}
+
+type GetEmbeddingOutput {
+  embeddingID: String!
+  linkageExplainer: String!
+  nodeList: [String!]!
+  similarityMatrix: [[Float!]!]!
+}
+
+input GetEnhancedDocumentRequest {
+  enhancedDocumentID: String!
+}
+
+input GetIdeasRequest {
+  enhancedDocumentID: String
+  text: String!
+}
+
+type GetIdeasResponse {
+  ideas: [String!]!
+}
+
+input GetLikesForPublishedDocumentVersionRequest {
+  publishedDocumentID: String!
+}
+
+input GetNoteRequest {
+  noteID: String!
+}
+
+input GetNotesForDocumentRequest {
+  documentID: String!
+}
+
+type GetNotesForDocumentResponse {
+  noteList: [NoteMetadata!]!
+}
+
+input GetOthersDailyChallengeResponsesRequest {
+  dailyChallengeID: Int!
+  responseString: String
+}
+
+input GetPublishedDocumentVersionInput {
+  documentID: String
+  slug: String
+  userID: String
+  username: String
+}
+
+input GetScratchpadEntriesForUserRequest {
+  date: Date!
+}
+
+input GetSharedWithRequest {
+  documentID: String!
+  versionName: String
+}
+
+type GetSharedWithResponse {
+  sharedOnDocument: [UserDocumentPermissionMetadata!]!
+  sharedOnDocumentVersion: [UserDocumentPermissionMetadata!]!
+}
+
+input GetStatSegmentRequest {
+  endDate: Date!
+  startDate: Date!
+  username: String
+}
+
+input GetUserProfileDataRequest {
+  username: String!
+}
+
+type GetUserResponse {
+  redirectURL: String
+  user: User
+}
+
+input GetWritingSessionForDocumentRequest {
+  documentID: String!
+}
+
+input GetWritingSessionsForUserRequest {
+  username: String!
+}
+
+input IncrementDailyStatUnitForWritingChallengeRequest {
+  dailyChallengeResponseID: String!
+  date: Date!
+  timeSpentSeconds: Int!
+}
+
+input IncrementDailyStatUnitRequest {
+  date: Date!
+  documentVersionID: String
+  timeSpentSeconds: Int!
+}
+
+input InviteUserToDocumentRequest {
+  documentVersionID: String!
+  role: String!
+  username: String!
+}
+
+scalar JSON
+
+type Mutation {
+  completeWritingSession(request: CompleteWritingSessionRequest!): Void
+  continueChatConversation(request: ContinueChatConversationRequest!): ContinueChatConversationResponse!
+  createComment(request: CreateCommentRequest!): CreateCommentResponse!
+  createDocument: CreateDocumentResponse
+  createDocumentVersion(request: CreateDocumentVersionRequest!): DocumentVersionMetadata!
+  createEnhancedDocument: EnhancedDocumentMetadata!
+  createNote(request: CreateNoteRequest!): Note!
+  createWritingSession(request: CreateWritingSessionRequest!): WritingSessionCreateResponse!
+  deleteDocument(request: DeleteDocumentRequest!): Void
+  deleteDocumentForUser(request: DeleteDocumentForUserRequest!): Void
+  deleteDocumentVersion(request: DeleteDocumentVersionRequest!): Void
+  deleteEnhancedDocument(request: DeleteEnhancedDocumentRequest!): Void
+  deleteNote(request: DeleteNoteRequest!): Void
+  deleteWritingSession(request: DeleteWritingSessionRequest!): Void
+  extrapolateIdeaInContext(request: ExtrapolateIdeaInContextRequest!): ExtrapolateIdeaInContextResponse!
+  followUser(request: FollowUserRequest!): Void
+  generateDraft(request: GenerateDraftRequest!): GenerateDraftResponse!
+  getEmbedding(request: GetEmbeddingInput!): GetEmbeddingOutput!
+  getIdeas(request: GetIdeasRequest!): GetIdeasResponse!
+  getNotesForDocument(request: GetNotesForDocumentRequest): [Note]
+  incrementDailyStatUnit(request: IncrementDailyStatUnitRequest!): Void
+  incrementDailyStatUnitForWritingChallenge(request: IncrementDailyStatUnitForWritingChallengeRequest!): Void
+  inviteUserToDocument(request: InviteUserToDocumentRequest!): Void
+  notLoggedInPostDailyChallenge(request: NotLoggedInPostDailyChallengeRequest!): Void
+  postDailyChallengeResponse(request: PostDailyChallengeRequest): Void
+  publishDocumentVersion(request: PublishDocumentVersionRequest!): Void
+  renameDocumentVersion(request: RenameDocumentVersionRequest!): Void
+  resolveComment(request: ResolveCommentRequest!): Void
+  saveDocumentContent(request: SaveDocumentContentRequest!): SaveDocumentContentResponse
+  saveDocumentTitle(request: SaveDocumentTitleRequest!): Void
+  saveEnhancedDocumentNotesContent(request: SaveEnhancedDocumentNotesContentRequest!): Void
+  saveNote(request: SaveNoteRequest!): Void
+  saveNoteTitle(request: SaveNoteTitleRequest!): Void
+  setDraftCollapsed(request: SetDraftCollapsedRequest!): Void
+  setPinnedIdeas(request: SetPinnedIdeasRequest!): Void
+  shareDocument(request: ShareDocumentRequest!): ShareDocumentResponse
+  shareDocumentVersion(request: ShareDocumentVersionRequest!): ShareDocumentVersionResponse!
+  shareNote(request: ShareNoteRequest!): UserNotePermission!
+  startChatConversation(request: StartChatConversationRequest!): StartChatConversationResponse!
+  submitPromptSuggestion(request: SubmitPromptSuggestionRequest!): Void
+  toggleLikeDailyChallengeResponse(request: ToggleLikeDailyChallengeResponseRequest!): Void
+  toggleLikePublishedDocumentVersion(request: ToggleLikePublishedDocumentVersionRequest!): Void
+  unfollowUser(request: UnfollowUserRequest!): Void
+  unpostDailyChallengeResponse(request: UnpostDailyChallengeRequest!): Void
+  unpublishDocumentVersion(request: UnpublishDocumentVersionRequest!): Void
+  unshareDocumentVersion(request: RemoveUserFromDocumentVersionRequest!): Void
+  unshareNote(request: UnshareNoteRequest!): Void
+  updateBasicUserInfo(request: UpdateBasicUserInfoRequest): Void
+  updateCompleteWritingSession(request: UpdateCompleteWritingSessionRequest!): Void
+  updateDailyChallengeResponseContent(request: UpdateDailyChallengeResponseContentRequest!): Void
+  updateDraft(request: UpdateDraftRequest!): Void
+  updateProfileData(request: UpdateProfileDataRequest!): Void
+  updateScratchpadEntryContent(request: UpdateScratchpadEntryContentRequest): Void
+  updateTitle(request: UpdateTitleRequest!): Void
+  updateWritingSession(request: UpdateWritingSessionRequest!): Void
+}
+
+input NotLoggedInPostDailyChallengeRequest {
+  content: String!
+  dailyChallengeID: Int!
+}
+
+type Note {
+  content: String
+  noteID: String!
+  personal: Boolean!
+  title: String
+  userNotePermissions: [UserNotePermission!]!
+}
+
+type NoteMetadata {
+  noteID: String!
+  personal: Boolean!
+  title: String
+  userNotePermissions: [UserNotePermission!]!
+}
+
+enum NoteRole {
+  ADMIN
+  EDITOR
+  OWNER
+}
+
+input PostDailyChallengeRequest {
+  dailyChallengeResponseID: String!
+}
+
+input PublishDocumentVersionRequest {
+  content: String
+  documentVersionID: String!
+  subtitle: String
+  title: String!
+  url: String!
+}
+
+type PublishedDocumentVersion {
+  content: String
+  documentID: String!
+  likingUsers: [String!]!
+  publishedAt: Date!
+  publishedDocumentID: String!
+  subtitle: String
+  title: String!
+  updatedAt: Date!
+  url: String!
+  user: User
+  userID: String!
+}
+
+type PublishedDocumentVersionMetadata {
+  publishedAt: Date!
+  title: String!
+  url: String!
+}
+
+type Query {
+  getAllPublishedDocumentVersionsForUser(args: GetAllPublishedDocumentVersionsForUserInput!): [PublishedDocumentVersion!]!
+  getCommentsForDocument(args: GetCommentsForDocumentRequest!): GetCommentsForDocumentResponse!
+  getContentForScratchpadEntries(args: GetContentForScratchpadEntriesRequest): [ScratchpadEntry!]!
+  getDailyChallengeForDate(args: GetDailyChallengeForDateRequest): GetDailyChallengeForDateResponse!
+  getDocument(args: GetDocumentRequest!): GetDocumentResponse!
+  getDocumentVersion(args: GetDocumentVersionRequest!): DocumentVersion!
+  getDocumentVersionFromVersionName(args: GetDocumentVersionFromVersionNameRequest!): DocumentVersion!
+  getDocuments: GetDocumentsResponse!
+  getEnhancedDocument(args: GetEnhancedDocumentRequest): EnhancedDocument!
+  getEnhancedDocumentMetadata: [EnhancedDocumentMetadata!]!
+  getFeedItems: [FeedItem!]!
+  getLikesForPublishedDocumentVersion(args: GetLikesForPublishedDocumentVersionRequest!): [User!]!
+  getNote(args: GetNoteRequest): Note!
+  getNotesForDocument(args: GetNotesForDocumentRequest!): GetNotesForDocumentResponse!
+  getOthersDailyChallengeResponses(args: GetOthersDailyChallengeResponsesRequest): [DailyChallengeResponse!]!
+  getPublishedDocumentVersion(args: GetPublishedDocumentVersionInput!): PublishedDocumentVersion!
+  getScratchpadEntriesForUser(args: GetScratchpadEntriesForUserRequest): [Date!]!
+  getSharedDocuments: GetDocumentsResponse!
+  getSharedWith(args: GetSharedWithRequest!): GetSharedWithResponse!
+  getStatSegment(args: GetStatSegmentRequest!): StatResponse!
+  getTrackingPageData(args: GetDailyChallengeStatusesForTrackingPageRequest): TrackingPageData!
+  getUser: GetUserResponse!
+  getUserProfileData(args: GetUserProfileDataRequest): UserProfileData!
+  getWritingSessionForDocument(args: GetWritingSessionForDocumentRequest!): WritingSession
+  getWritingSessionsForUser(args: GetWritingSessionsForUserRequest!): [WritingSession!]!
+  usernameSearch(args: UsernameSearchRequest): [UsernameSearchResult!]!
+}
+
+input RemoveUserFromDocumentVersionRequest {
+  documentVersionID: String!
+  userID: String!
+}
+
+input RenameDocumentVersionRequest {
+  documentVersionID: String!
+  versionName: String!
+}
+
+input ResolveCommentRequest {
+  commentID: String!
+  userDocumentPermissionID: String!
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  LEAD_REVIEWER
+  OWNER
+  REVIEWER
+}
+
+input SaveDocumentContentRequest {
+  content: String!
+  date: Date!
+  documentID: String!
+  versionName: String
+  wordCount: Int!
+}
+
+type SaveDocumentContentResponse {
+  comments: [Comment!]!
+}
+
+input SaveDocumentTitleRequest {
+  documentID: String!
+  title: String!
+}
+
+input SaveEnhancedDocumentNotesContentRequest {
+  enhancedDocumentID: String!
+  notesContent: String!
+}
+
+input SaveNoteRequest {
+  content: String!
+  noteID: String!
+}
+
+input SaveNoteTitleRequest {
+  noteID: String!
+  title: String!
+}
+
+type ScratchpadEntry {
+  content: String
+  date: Date!
+  scratchpadEntryID: String!
+  userID: String!
+}
+
+input SetDraftCollapsedRequest {
+  collapsed: Boolean!
+  enhancedDocumentID: String!
+}
+
+input SetPinnedIdeasRequest {
+  enhancedDocumentID: String!
+  pinnedIdeas: [String!]!
+}
+
+input ShareDocumentRequest {
+  documentID: String!
+  role: EditableRole!
+  username: String!
+}
+
+type ShareDocumentResponse {
+  userDocumentPermission: UserDocumentPermissionMetadata!
+}
+
+input ShareDocumentVersionRequest {
+  documentID: String!
+  role: EditableRole!
+  username: String!
+  versionName: String
+}
+
+type ShareDocumentVersionResponse {
+  userDocumentPermission: UserDocumentPermissionMetadata!
+}
+
+input ShareNoteRequest {
+  noteID: String!
+  role: EditableNoteRole!
+  username: String!
+}
+
+input StartChatConversationRequest {
+  chatMessage: String!
+  document: String!
+  enhancedDocumentID: String!
+  sectionJSON: String!
+  sectionText: String!
+}
+
+type StartChatConversationResponse {
+  responseMessage: String!
+  threadID: String!
+}
+
+type Stat {
+  date: Date!
+  timeSpentSeconds: Int!
+  wordsChanged: Int!
+}
+
+type StatResponse {
+  stats: [Stat!]!
+}
+
+input SubmitPromptSuggestionRequest {
+  prompt: String!
+}
+
+input ToggleLikeDailyChallengeResponseRequest {
+  dailyChallengeResponseID: String!
+}
+
+input ToggleLikePublishedDocumentVersionRequest {
+  publishedDocumentID: String!
+}
+
+type TrackingPageData {
+  currentStreak: Int!
+  dailyChallengeStatuses: [DailyChallengeStatus!]!
+  longestStreak: Int!
+}
+
+input UnfollowUserRequest {
+  userID: String!
+}
+
+input UnpostDailyChallengeRequest {
+  dailyChallengeResponseID: String!
+}
+
+input UnpublishDocumentVersionRequest {
+  documentID: String!
+}
+
+input UnshareNoteRequest {
+  userNotePermissionID: String!
+}
+
+input UpdateBasicUserInfoRequest {
+  firstName: String
+  lastName: String
+  username: String
+}
+
+input UpdateCompleteWritingSessionRequest {
+  title: String!
+  writingSessionID: String!
+}
+
+input UpdateDailyChallengeResponseContentRequest {
+  content: String!
+  dailyChallengeResponseID: String!
+  date: Date!
+  wordCount: Int!
+}
+
+input UpdateDraftRequest {
+  enhancedDocumentID: String!
+  updatedDraftContent: String!
+}
+
+input UpdateNotePanelPixelSplitRequest {
+  enhancedDocumentID: String!
+  newNotePanelPixelSplitPercentage: Float!
+}
+
+input UpdateProfileDataRequest {
+  bio: String
+  city: String
+  country: String
+  instagram: String
+  twitter: String
+  website: String
+}
+
+input UpdateScratchpadEntryContentRequest {
+  content: String!
+  scratchpadEntryID: String!
+}
+
+input UpdateTitleRequest {
+  enhancedDocumentID: String!
+  updatedTitle: String!
+}
+
+input UpdateWritingSessionRequest {
+  timeSpentSeconds: Int!
+  wordsAdded: Int!
+  wordsRemoved: Int!
+  writingSessionID: String!
+}
+
+type User {
+  firstName: String
+  lastName: String
+  userID: String!
+  username: String!
+}
+
+type UserDocumentPermission {
+  documentVersionID: String!
+  role: String
+  userID: String!
+}
+
+type UserDocumentPermissionMetadata {
+  documentID: String
+  documentVersionID: String
+  role: Role!
+  userDocumentPermissionID: String!
+  userID: String!
+  username: String!
+}
+
+type UserNotePermission {
+  noteID: String!
+  role: NoteRole!
+  userID: String!
+  userNotePermissionID: String!
+  username: String!
+}
+
+type UserProfileData {
+  bio: String
+  city: String
+  country: String
+  createdAt: Date!
+  firstName: String!
+  followerCount: Int!
+  following: Boolean!
+  followingCount: Int!
+  instagram: String
+  lastName: String
+  twitter: String
+  userID: String!
+  username: String!
+  website: String
+}
+
+input UsernameSearchRequest {
+  username: String!
+}
+
+type UsernameSearchResult {
+  userID: String!
+  username: String!
+}
+
+scalar Void
+
+type WritingSession {
+  flow: Int
+  segmentTime: [Int!]!
+  startDateTime: DateTime!
+  timeSpentSeconds: Int!
+  title: String!
+  userID: String!
+  username: String
+  wordsChanged: Int!
+  writingSessionID: String!
+}
+
+type WritingSessionCreateResponse {
+  writingSessionID: String!
+}

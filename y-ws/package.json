@@ -1,0 +1,14 @@
+{
+  "name": "ws",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "HOST=0.0.0.0 PORT=1234 npx y-websocket"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "y-websocket": "^1.4.5",
+    "yjs": "^13.5.41"
+  }
+}

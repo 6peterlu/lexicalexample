@@ -1,0 +1,18 @@
+{
+  "extends": "next",
+  "rules": {
+    "import/no-anonymous-default-export": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [{
+          "name": "@fortawesome/free-solid-svg-icons",
+          "message": "Please import from @fortawesome/free-solid-svg-icons/* instead."
+        },
+        {
+          "name": "@fortawesome/free-regular-svg-icons",
+          "message": "Please import from @fortawesome/free-regular-svg-icons/* instead."
+        }]
+      }]
+  }
+}
